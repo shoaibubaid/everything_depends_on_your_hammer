@@ -12,7 +12,7 @@
 #define EXT_FILE_OPEN_ERROR -1
 #define EXT_DATA_ERROR -3
 #define EXT_CRYPTO_FAILURE -4
-#define MAX_BUFFER_SIZE 50
+#define MAX_BUFFER_SIZE 100
 
 int main()
 {   
@@ -32,12 +32,14 @@ int main()
     FILE *fp_sig, *fp_pub, *fp_rsp, *fp_wots_pk_rsp, *fp_fault_sig, *fp_fault_sig_rsp;
     
     layer = SPX_D - 1;
-    fp_fault_sig_rsp = fopen("extracted/extracted_faulted_results.txt", "w");
+    
+    fp_fault_sig_rsp = fopen("../../bash_script_results/extracted/extracted_faulted_results.txt", "w");
     // fp_wots_pk_rsp = fopen("extracted/extracted_wots_pk.txt", "r");
-    fp_pub = fopen("in/collected_pubkey.txt", "r");
-    fp_fault_sig = fopen("in/collected_faulty_sig.txt", "r");
-    sprintf(fp_buffer, "extracted/extracted_wots_pk.txt");
+    fp_pub = fopen("../../collected_pubkey.txt", "r");
+    fp_fault_sig = fopen("../../bash_script_results/in/collected_faulty_sig.txt", "r");
+    sprintf(fp_buffer, "../../bash_script_results/extracted/extracted_wots_pk.txt");
 
+    
     if (!ReadHex(fp_pub, pub_key, CRYPTO_PUBLICKEYBYTES, "pk = "))
     {
         printf("ERROR: unable to read 'pk' from <%s>\n", "fn_req");

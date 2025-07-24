@@ -1,20 +1,63 @@
 import subprocess
 import os
+import platform
+import shutil
+import sys
+import shlex
+
+in_folder = "bash_script_results/in"
+extracted_folder = "bash_script_results/extracted"
+out_folder = "bash_script_results/out"
+# Create the folder if it doesn't exist
+def create_folder(folder_path):
+    if not os.path.exists(folder_path):
+        os.makedirs(folder_path)
+        print(f"Folder '{folder_path}' created.")
+    else:
+        print(f"Folder '{folder_path}' already exists.")
+
+create_folder(in_folder)
+create_folder(extracted_folder)
+create_folder(out_folder)
+
+
 
 def run_command(cmd, cwd=None):
-    """Run a shell command and print output in real-time."""
-    print(f"Running: {cmd} (in {cwd or os.getcwd()})")
-    subprocess.run(cmd, shell=True, check=True, cwd=cwd)
+    # If the command starts with 'python3', replace it with the current Python interpreter
+    if cmd.startswith("python3"):
+        cmd = cmd.replace("python3", sys.executable, 1)
+
+    # Handle executables on Windows
+    if platform.system() == "Windows":
+        parts = shlex.split(cmd)
+        exe = parts[0]
+        # Remove './' prefix if present
+        if exe.startswith("./"):
+            exe = exe[2:]
+        # Add .exe only if it's not a Python script or already has an extension
+        if not exe.endswith((".exe", ".py")) and os.path.isfile(os.path.join(cwd or ".", exe + ".exe")):
+            exe += ".exe"
+        parts[0] = exe
+        cmd = parts
+
+    else:
+        cmd = shlex.split(cmd)
+
+    subprocess.run(cmd, cwd=cwd, check=True)
+
 
 source = "signature.txt"
-destination = "sphincsplus-attack-code-main/ref/in/collected_unfaulted_sig.txt"
+# destination = "sphincsplus-attack-code-main/ref/in/collected_unfaulted_sig.txt"
+unfaulted_signature = "bash_script_results/in/collected_unfaulted_sig.txt"
+open(unfaulted_signature, "w").close()
 
-open(destination, "w").close()
 
 for i in range(1):
     run_command(f"python3 2_sign_generate.py")
-    with open(source, "r") as src, open(destination, "a") as dst:
+    with open(source, "r") as src, open(unfaulted_signature, "a") as dst:
         dst.write(src.read())
+
+shutil.copy(source, unfaulted_signature)
 
 # Directories
 SPHINCSPLUS = ""
@@ -33,8 +76,9 @@ HELPER = "find_fault_locations_helper"
 # MAX_ADDRESS_VALUE = [24, 610, 175, 47, 416, 260, 506, 341]
 
 FUNC_NAME = ["treehashx8"]
-BASE_ADDRESS = ["0x00005555555e13d0"]
-MAX_ADDRESS_VALUE = [400]
+# BASE_ADDRESS = ["0x00005555555e13d0+150"]
+BASE_ADDRESS = ["0x5555555e147f"]
+MAX_ADDRESS_VALUE = [25]
 
 # FUNC_NAME = ["u32_to_bytes"]
 # BASE_ADDRESS = ["0x000055555555bdd0"]
@@ -50,29 +94,26 @@ for i, func in enumerate(FUNC_NAME):
     # Go to SPHINCSPLUS directory
     sphincsplus_path = os.path.abspath(SPHINCSPLUS)
 
-    # run_command(f"python3 {HELPER}/1.py {BASE_ADDRESS[i]} {MAX_ADDRESS_VALUE[i]}", cwd=sphincsplus_path)
+    run_command(f"python3 {HELPER}/1.py {BASE_ADDRESS[i]} {MAX_ADDRESS_VALUE[i]}", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/2.py", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/3.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/4.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/5.py", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/6.py", cwd=sphincsplus_path)
 
-    # Copy results
-    out_file = os.path.join(sphincsplus_path, "bash_script_results/outs_with_address.txt")
-    attack_in = os.path.abspath(f"{ATTACK_CODE}/in/collected_faulty_sig.txt")
-    run_command(f"cp {out_file} {attack_in}")
-
     # Run extract_faulted_sign_info
     attack_path = os.path.abspath(ATTACK_CODE)
     run_command("./extract_sign_info", cwd=attack_path)
     run_command("./extract_faulted_sign_info", cwd=attack_path)
 
-    # Copy extracted results back
-    extracted_file = os.path.join(attack_path, "extracted/extracted_faulted_results.txt")
-    results_dir = os.path.join(sphincsplus_path, "bash_script_results")
-    run_command(f"cp {extracted_file} {results_dir}")
+    # # Copy extracted results back
+    # extracted_file = os.path.join(attack_path, "extracted/extracted_faulted_results.txt")
+    # results_dir = os.path.join(sphincsplus_path, "bash_script_results")
+    # # run_command(f"cp {extracted_file} {results_dir}")
+    # shutil.copy(extracted_file, results_dir)
+
 
     # Back to SPHINCSPLUS
     run_command(f"python3 {HELPER}/7.py", cwd=sphincsplus_path)
-    run_command(f"python3 {HELPER}/8.py", cwd=sphincsplus_path)
+    # run_command(f"python3 {HELPER}/8.py", cwd=sphincsplus_path)
     # run_command(f"mv bash_script_results bash_script_results_{func}", cwd=sphincsplus_path)

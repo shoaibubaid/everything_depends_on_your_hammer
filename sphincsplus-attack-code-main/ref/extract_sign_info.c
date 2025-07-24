@@ -31,10 +31,10 @@ int main()
     FILE *fp_sig, *fp_pub, *fp_rsp, *fp_wots_pk_rsp, *fp_fault_sig, *fp_fault_sig_rsp;
     
     layer = SPX_D - 1;
-    fp_rsp = fopen("extracted/extracted_unfaulted_results.txt", "w");
-    fp_wots_pk_rsp = fopen("extracted/extracted_wots_pk.txt", "w");
-    fp_sig = fopen("in/collected_unfaulted_sig.txt", "r");
-    fp_pub = fopen("in/collected_pubkey.txt", "r");
+    fp_rsp = fopen("../../bash_script_results/extracted/extracted_unfaulted_results.txt", "w");
+    fp_wots_pk_rsp = fopen("../../bash_script_results/extracted/extracted_wots_pk.txt", "w");
+    fp_sig = fopen("../../bash_script_results/in/collected_unfaulted_sig.txt", "r");
+    fp_pub = fopen("../../collected_pubkey.txt", "r");
 
     if (!ReadHex(fp_pub, pub_key, CRYPTO_PUBLICKEYBYTES, "pk = "))
     {
