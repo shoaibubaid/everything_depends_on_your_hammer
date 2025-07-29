@@ -4,6 +4,7 @@ import platform
 import shutil
 import sys
 import shlex
+from configs import liboqs
 
 in_folder = "bash_script_results/in"
 extracted_folder = "bash_script_results/extracted"
@@ -52,7 +53,7 @@ unfaulted_signature = "bash_script_results/in/collected_unfaulted_sig.txt"
 open(unfaulted_signature, "w").close()
 
 
-for i in range(1):
+for i in range(2):
     run_command(f"python3 2_sign_generate.py")
     with open(source, "r") as src, open(unfaulted_signature, "a") as dst:
         dst.write(src.read())
@@ -75,26 +76,37 @@ HELPER = "find_fault_locations_helper"
 # ]
 # MAX_ADDRESS_VALUE = [24, 610, 175, 47, 416, 260, 506, 341]
 
-FUNC_NAME = ["treehashx8"]
+# FUNC_NAME = ["treehashx8"]
 # BASE_ADDRESS = ["0x00005555555e13d0+150"]
-BASE_ADDRESS = ["0x5555555e147f"]
-MAX_ADDRESS_VALUE = [25]
+# BASE_ADDRESS = ["0x00005555555e1420"]
+# MAX_ADDRESS_VALUE = [25]
 
 # FUNC_NAME = ["u32_to_bytes"]
 # BASE_ADDRESS = ["0x000055555555bdd0"]
 # MAX_ADDRESS_VALUE = [8]
 
-# MAX_ADDRESS_VALUE = [1115]
+
+if liboqs == 1:
+    FUNC_NAME = ["treehashx8"]
+    BASE_ADDRESS = ["0x00005555555e13d0"]
+# PQCLEAN_SPHINCSSHA2256FSIMPLE_AVX2_treehashx8
+    # MAX_ADDRESS_VALUE = [30]
+    MAX_ADDRESS_VALUE = [1115]
+else:
+    FUNC_NAME = ["treehashx1"]
+    BASE_ADDRESS = ["0x0000555555556ec0"]
+    # MAX_ADDRESS_VALUE = [30]
+    MAX_ADDRESS_VALUE = [633]
 
 
-
+print(BASE_ADDRESS[0])
 for i, func in enumerate(FUNC_NAME):
     print(f"\n===== Running for function: {func} =====")
     
     # Go to SPHINCSPLUS directory
     sphincsplus_path = os.path.abspath(SPHINCSPLUS)
 
-    run_command(f"python3 {HELPER}/1.py {BASE_ADDRESS[i]} {MAX_ADDRESS_VALUE[i]}", cwd=sphincsplus_path)
+    run_command(f"python3 {HELPER}/1.py {BASE_ADDRESS[i]} {MAX_ADDRESS_VALUE[i]} {liboqs}", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/2.py", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/3.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/4.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
