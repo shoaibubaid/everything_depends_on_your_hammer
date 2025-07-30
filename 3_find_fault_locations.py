@@ -107,25 +107,10 @@ for i, func in enumerate(FUNC_NAME):
     sphincsplus_path = os.path.abspath(SPHINCSPLUS)
 
     run_command(f"python3 {HELPER}/1.py {BASE_ADDRESS[i]} {MAX_ADDRESS_VALUE[i]} {liboqs}", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/2.py", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/3.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/4.py {BASE_ADDRESS[i]}", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/5.py", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/6.py", cwd=sphincsplus_path)
 
     # Run extract_faulted_sign_info
     attack_path = os.path.abspath(ATTACK_CODE)
     run_command("./extract_sign_info", cwd=attack_path)
     run_command("./extract_faulted_sign_info", cwd=attack_path)
-
-    # # Copy extracted results back
-    # extracted_file = os.path.join(attack_path, "extracted/extracted_faulted_results.txt")
-    # results_dir = os.path.join(sphincsplus_path, "bash_script_results")
-    # # run_command(f"cp {extracted_file} {results_dir}")
-    # shutil.copy(extracted_file, results_dir)
-
-
     # Back to SPHINCSPLUS
     run_command(f"python3 {HELPER}/2.py", cwd=sphincsplus_path)
-    # run_command(f"python3 {HELPER}/8.py", cwd=sphincsplus_path)
-    # run_command(f"mv bash_script_results bash_script_results_{func}", cwd=sphincsplus_path)
