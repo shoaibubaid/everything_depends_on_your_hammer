@@ -35,8 +35,9 @@ def run_command(cmd, cwd=None):
 
 source = "signature.txt"
 unfaulted_signature = "bash_script_results/in/collected_unfaulted_sig.txt"
-
+faulty_signature = "bash_script_results/in/collected_faulty_sig.txt"
 open(unfaulted_signature, "w").close()
+open(faulty_signature, "w").close()
 for i in range(2):
     # Ensure directory exists
     print(f"Writing to {os.path.abspath(unfaulted_signature)}")

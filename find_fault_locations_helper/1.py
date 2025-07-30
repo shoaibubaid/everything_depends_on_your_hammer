@@ -4,25 +4,41 @@ import tempfile
 import sys
 import csv
 
+def get_column(parts, index):
+    """Return the column at index if it exists, otherwise the last column."""
+    if len(parts) > index:
+        return parts[index]
+    elif len(parts) > 1:
+        return parts[1]
+    else:
+        return parts[0]  # fallback if only one column exists
 
-EXECUTABLE = "liboqs_signature_gen/bin/sign_heap"
+
+
 
 # Check if executable exists
-if not os.path.isfile(f"./{EXECUTABLE}"):
-    print(f"Error: ./{EXECUTABLE} does not exist. Please compile your code first.")
-    sys.exit(1)
+
 
 # Validate arguments
-if len(sys.argv) != 3:
-    print(f"Usage: python3 {sys.argv[0]} <base_address> <max_address_value>")
-    print(f"Example: python3 {sys.argv[0]} 0x0000555555557410 610")
+if len(sys.argv) != 4:
+    print(f"Usage: python3 {sys.argv[0]} <base_address> <max_address_value> <liboqs>")
+    print(f"Example: python3 {sys.argv[0]} 0x0000555555557410 610 1")
     sys.exit(1)
-
+# PQCLEAN_SPHINCSSHA2256FSIMPLE_AVX2_treehash
 input_addr = sys.argv[1]
 if not input_addr.startswith("0x"):
     print("Error: base address must start with 0x")
     sys.exit(1)
 
+liboqs = int(sys.argv[3])
+if(liboqs == 1):
+    EXECUTABLE = "liboqs_signature_gen/bin/sign_heap"
+else:
+    EXECUTABLE = "sphincsplus-standard/ref/sign_sha2_256f"
+
+if not os.path.isfile(f"./{EXECUTABLE}"):
+    print(f"Error: ./{EXECUTABLE} does not exist. Please compile your code first.")
+    sys.exit(1)
 
 # Get base address and max value
 BASE_ADDRESS = int(sys.argv[1], 16)  # Convert hex to int
@@ -31,6 +47,8 @@ MAX_ADDRESS_VALUE = int(sys.argv[2])
 # Prepare output file and directory
 OUTPUT_DIR = "bash_script_results"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "initial_results.txt")
 
 # Disable debuginfod globally
@@ -68,6 +86,10 @@ for i in range(MAX_ADDRESS_VALUE + 1):
             gdb_script.write("x/1i $addr\n")
             gdb_script.write("continue\n")
             gdb_script.write("quit\n")
+
+
+
+
 
             gdb_script_name = gdb_script.name
 
@@ -140,18 +162,73 @@ os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
 open(OUTPUT_FILE, "w").close()
 
 # --- Read File and Process ---
-lines = []
+# lines = []
+
+# with open(INPUT_FILE, "r") as infile, open(OUTPUT_FILE, "a") as outfile:
+#     for line in infile:
+#         line = line.strip()
+
+#         if "crypto_sign_open returned <-1>" in line:
+#             if len(lines) >= 2:  # Ensure at least 2 lines exist
+#                 parts_line1 = lines[1].split()
+#                 parts_line0 = lines[0].split()
+
+#                 addr  = parts_line1[0]
+#                 byte1 = parts_line1[2] if len(parts_line1) > 2 else parts_line1[1]
+#                 byte2 = parts_line0[2] if len(parts_line0) > 2 else parts_line0[1]
+#             else:
+#                 print("Error: Not enough lines in the file.")
+#                 sys.exit(1)
+            
+#             # if len(lines) >= 3:
+#             #     # Extract values
+#             #     addr = lines[1].split()[0]
+#             #     byte1 = lines[1].split()[2]
+#             #     byte2 = lines[0].split()[2]
+
+#                 # Convert address to decimal and calculate offset
+#                 addr_dec = int(addr, 16)
+#                 offset = addr_dec - base_dec
+
+#                 # Write CSV line
+#                 outfile.write(f"{offset},{byte1},{byte2}\n")
+
+#             lines = []  # Reset buffer
+#         else:
+#             lines.append(line)
+#             if len(lines) > 3:
+#                 lines.pop(0)  # Keep last 3 lines only
+
+# print(f"Processing complete. Output saved to {OUTPUT_FILE}.")
+
+lines = []  # Buffer to store last 3 lines
 
 with open(INPUT_FILE, "r") as infile, open(OUTPUT_FILE, "a") as outfile:
+
     for line in infile:
         line = line.strip()
 
         if "crypto_sign_open returned <-1>" in line:
-            if len(lines) >= 3:
-                # Extract values
-                addr = lines[1].split()[0]
-                byte1 = lines[1].split()[2]
-                byte2 = lines[0].split()[2]
+            if len(lines) >= 2:  # Ensure at least 2 previous lines exist
+                parts_line1 = lines[1].split()
+                parts_line0 = lines[0].split()
+
+                # Skip if less than 2 parts
+                if len(parts_line1) < 2 or len(parts_line0) < 2:
+                    print(f"Skipping lines due to insufficient columns: {lines}")
+                    lines = []  # Reset buffer
+                    continue
+
+                # If both have at least 3 columns, use normal logic
+                if len(parts_line1) > 2 and len(parts_line0) > 2:
+                    addr  = parts_line1[0]
+                    byte1 = parts_line1[2]
+                    byte2 = parts_line0[2]
+                else:
+                    # Skip writing if 3rd column doesn't exist
+                    print(f"Skipping lines with less than 3 columns: {lines}")
+                    lines = []  # Reset buffer
+                    continue
 
                 # Convert address to decimal and calculate offset
                 addr_dec = int(addr, 16)
@@ -159,15 +236,17 @@ with open(INPUT_FILE, "r") as infile, open(OUTPUT_FILE, "a") as outfile:
 
                 # Write CSV line
                 outfile.write(f"{offset},{byte1},{byte2}\n")
+            else:
+                print("Error: Not enough lines in the file.")
+                sys.exit(1)
 
             lines = []  # Reset buffer
         else:
             lines.append(line)
             if len(lines) > 3:
-                lines.pop(0)  # Keep last 3 lines only
+                lines.pop(0)  # Keep only the last 3 lines
 
 print(f"Processing complete. Output saved to {OUTPUT_FILE}.")
-
 
 
 
@@ -187,7 +266,11 @@ BASE_ADDRESS = int(input_addr, 16)
 
 # --- File and Directory Setup ---
 INPUT_FILE = "bash_script_results/possible_faults.csv"
-EXEC_FILE = "./liboqs_signature_gen/bin/sign_heap"
+
+if(liboqs == 1):
+    EXEC_FILE = "./liboqs_signature_gen/bin/sign_heap"
+else:
+    EXEC_FILE = "./sphincsplus-standard/ref/sign_sha2_256f"
 RESULT_DIR1 = "bash_script_results/results"
 RESULT_LOG1 = "signature.txt"
 ERROR_LOG = "error_log.txt"
@@ -297,26 +380,44 @@ else:
     print("No empty files found.")
 
 
-# Hardcoded input and output paths
+# # Hardcoded input and output paths
+# input_folder = "bash_script_results/results"
+# output_file = "bash_script_results/in/collected_faulty_sig.txt"
+
+# # Ensure output directory exists
+# os.makedirs(os.path.dirname(output_file), exist_ok=True)
+
+# # Clear the output file
+# with open(output_file, "w") as outfile:
+#     pass
+
+# # Loop through all files in the folder (non-recursive)
+# with open(output_file, "a") as outfile:
+#     for file_name in sorted(os.listdir(input_folder)):
+#         file_path = os.path.join(input_folder, file_name)
+#         if os.path.isfile(file_path):
+#             outfile.write(f"address = {file_name}\n")
+#             with open(file_path, "r") as infile:
+#                 outfile.write(infile.read())
+#             outfile.write("\n\n")  # Add two newlines after each file's content
+
+# print(f"All files combined into {output_file}.")
+
+
 input_folder = "bash_script_results/results"
 output_file = "bash_script_results/in/collected_faulty_sig.txt"
 
 # Ensure output directory exists
 os.makedirs(os.path.dirname(output_file), exist_ok=True)
 
-# Clear the output file
+# Open output file once
 with open(output_file, "w") as outfile:
-    pass
-
-# Loop through all files in the folder (non-recursive)
-with open(output_file, "a") as outfile:
     for file_name in sorted(os.listdir(input_folder)):
         file_path = os.path.join(input_folder, file_name)
         if os.path.isfile(file_path):
             outfile.write(f"address = {file_name}\n")
-            with open(file_path, "r") as infile:
+            with open(file_path, "r", errors="ignore") as infile:
                 outfile.write(infile.read())
-            outfile.write("\n\n")  # Add two newlines after each file's content
+            outfile.write("\n")  # Optional: add newline between files
 
 print(f"All files combined into {output_file}.")
-

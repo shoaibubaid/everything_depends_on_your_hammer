@@ -36,7 +36,7 @@
      uint8_t *public_key = OQS_MEM_malloc(sig->length_public_key);
      uint8_t *secret_key = OQS_MEM_malloc(sig->length_secret_key);
      FILE *fp_key = fopen("key.txt", "w");
-    //  FILE *fp_pub = fopen("txt/pub_key.txt", "w");
+     FILE *fp_pub = fopen("collected_pubkey.txt", "w");
      OQS_STATUS rc;
  
      if (!public_key || !secret_key ) {
@@ -55,7 +55,7 @@
      
     fprintbstr(fp_key, "sk = ", secret_key, OQS_SIG_sphincs_sha2_256f_simple_length_secret_key);
     fprintbstr(fp_key, "pk = ", public_key, OQS_SIG_sphincs_sha2_256f_simple_length_public_key);
-    // fprintbstr(fp_pub, "pk = ", public_key, OQS_SIG_sphincs_sha2_256f_simple_length_public_key);
+    fprintbstr(fp_pub, "pk = ", public_key, OQS_SIG_sphincs_sha2_256f_simple_length_public_key);
  
      printf("key for OQS_SIG_sphincs_sha2_256f_simple generated successfully and stored in key.txt.\n");
      cleanup_key(public_key, secret_key,sig);

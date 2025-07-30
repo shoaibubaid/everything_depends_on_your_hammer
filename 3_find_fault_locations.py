@@ -94,7 +94,7 @@ if liboqs == 1:
     MAX_ADDRESS_VALUE = [1115]
 else:
     FUNC_NAME = ["treehashx1"]
-    BASE_ADDRESS = ["0x0000555555556ec0"]
+    BASE_ADDRESS = ["0x0000555555556e20"]
     # MAX_ADDRESS_VALUE = [30]
     MAX_ADDRESS_VALUE = [633]
 
@@ -126,6 +126,6 @@ for i, func in enumerate(FUNC_NAME):
 
 
     # Back to SPHINCSPLUS
-    run_command(f"python3 {HELPER}/7.py", cwd=sphincsplus_path)
+    run_command(f"python3 {HELPER}/2.py", cwd=sphincsplus_path)
     # run_command(f"python3 {HELPER}/8.py", cwd=sphincsplus_path)
     # run_command(f"mv bash_script_results bash_script_results_{func}", cwd=sphincsplus_path)

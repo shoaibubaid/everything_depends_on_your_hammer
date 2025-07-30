@@ -75,6 +75,7 @@
              cleanup_heap(public_key, secret_key, message, signature, sig);
              return OQS_ERROR;
          }
+         fprintf(fp_rsp, "address = just_to_fill\n");
          fprintf(fp_rsp, "count = %d\n", i);
          fprintf(fp_rsp, "mlen = %d\n", MESSAGE_LEN);
          fprintbstr(fp_rsp, "msg = ", message, MESSAGE_LEN);

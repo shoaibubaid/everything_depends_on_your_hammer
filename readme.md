@@ -1,0 +1,106 @@
+# Everything Depends on Your Hammer
+
+## Requirements
+- **liboqs library** (must be installed and configured)
+- **GDB** (GNU Debugger)
+- **Python 3.x**
+
+
+## SPHINCS+ Implementations
+This repository contains **two implementations of SPHINCS+:**
+1. **liboqs library implementation** located in `liboqs_signature_gen`
+2. **Standard SPHINCS+ repository** located in `sphincsplus-standard`
+
+- This implementation consists of SHA2 hash function with SPHINCS+-256f configuration.
+- reference valid and faulty signatures are given in `bash_script_results_liboqs` and `bash_script_results_standard`. Just copy the contents into the `bash_script_results` and copy the keys into `key.txt` and `collected_pubkey.txt`
+---
+
+## Compilation
+To compile the binaries, navigate to the required library directory and run:
+```bash
+cd liboqs_signature_gen
+make all
+```
+and/or
+
+```bash
+cd sphincsplus-standard/ref
+make all
+```
+
+## Pre-requisites
+
+Before proceeding further:
+
+1. **Select the Implementation**  
+   Set which SPHINCS+ implementation you want to use in **`configs.py`**:
+   - Use `liboqs=1` for the **liboqs implementation**.
+   - Use `liboqs=0` for the **standard SPHINCS+ implementation**.
+
+2. **Function Disassembly using GDB**  
+   Disassemble the following functions using **GDB** :
+   - `PQCLEAN_SPHINCSSHA2256FSIMPLE_AVX2_treehashx8`  
+     (from **liboqs library – `bin/sign_heap`**)
+   - `SPX_treehashx1`  
+     (from **standard SPHINCS+ – `sphincsplus-standard/ref/sign_sha2_256f`**)
+
+    **Paste the Base Address and Offset** in **`3_find_fault_locations.py`**,   
+   Paste the **initial address location** of the respective function into `BASE_ADDRESS`  
+   and set the **maximum offset value** in `MAX_ADDRESS_VALUE`.  
+
+   **Note:** Run **GDB** while being in the **root directory** of this repository.
+3. **again** Disassemble the following functions using **GDB**  :
+   - `PQCLEAN_SPHINCSSHA2256FSIMPLE_AVX2_treehashx8`  
+     (from **liboqs library – `bin/sign_heap_v2`**)
+   - `SPX_treehashx1`  
+     (from **standard SPHINCS+ – `sphincsplus-standard/ref/sign_sha2_256f_v2`**)
+
+    **Paste the Base Address and Offset** in **`5_collect_fault_sigs.py`**,   
+   Paste the **initial address location** of the respective function into `BASE_ADDRESS`  
+   and set the **maximum offset value** in `MAX_ADDRESS_VALUE`.  
+
+   **Note:** These are the _v2 functions which have slight changes
+
+- I have pasted the address and offset as per my device, change if necassary
+
+---
+## Running the code
+
+1. **generate the key**
+    - generate a key using 
+    ```bash
+    python3 1_key_generate.py
+    ```
+5. **generate the signature**
+    - generate a signature using 
+    ```bash
+    python3 2_sign_generate.py
+    ```
+6. **find the locations that give exploitable faults**
+    - In this step, we find the locations that can generate exploitable fault locations
+    ```bash
+    python3 3_find_fault_locations.py
+    ```
+    - This generates `useful_addresses.csv` that consists of all exploitable offsets
+
+6. **collect valid signatures**
+    - In this step, we collect valid signatures for extraction purposes
+    ```bash
+    python3 4_collect_valid_sigs.py
+    ```
+6. **colelct faulty signatures**
+    - In this step, we collect the actual faulty signatures
+    ```bash
+    python3 5_collect_fault_sigs.py <no.of fault locations required>
+    ```
+    - Try to collect more for easy and faster attack
+6. **extract_min_sk**
+    - Here we extract the minimum WOTS+ that we can get
+    ```bash
+    python3 6_extract_min_sk.py
+    ```
+6. **forge**
+    -final steps, we forge the message. enter the message details in `message_to_forge.txt` and run 
+    ```bash
+    python3 7_forge.py
+    ```
