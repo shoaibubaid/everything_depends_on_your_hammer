@@ -98,4 +98,3 @@ for i in range(1, N + 1):
         with open(os.path.join(OUT_DIR, OUT_FILE), "a") as out_file, open(CPY_FILE, "r") as cpy_file:
             out_file.write(cpy_file.read())
 
-# cat "${OUT_DIR}${OUT_FILE}" > "${OUT2_FILE}" (not needed here)

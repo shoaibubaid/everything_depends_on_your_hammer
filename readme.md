@@ -11,7 +11,7 @@ This repository contains **two implementations of SPHINCS+:**
 1. **liboqs library implementation** located in `liboqs_signature_gen`
 2. **Standard SPHINCS+ repository** located in `sphincsplus-standard`
 
-- This implementation consists of SHA2 hash function with SPHINCS+-256f configuration.
+- This implementation consists of SHA2 hash function with SPHINCS+-256f configuration. However, it works for all the variants of SPHINCS+
 - reference valid and faulty signatures are given in `bash_script_results_liboqs` and `bash_script_results_standard`. Just copy the contents into the `bash_script_results` and copy the keys into `key.txt` and `collected_pubkey.txt`
 ---
 
@@ -21,10 +21,16 @@ To compile the binaries, navigate to the required library directory and run:
 cd liboqs_signature_gen
 make all
 ```
-and/or
+and
 
 ```bash
 cd sphincsplus-standard/ref
+make all
+```
+and
+
+```bash
+cd sphincsplus-attack-code-main/ref
 make all
 ```
 
@@ -81,7 +87,8 @@ Before proceeding further:
     ```bash
     python3 3_find_fault_locations.py
     ```
-    - This generates `useful_addresses.csv` that consists of all exploitable offsets
+    - This generates `useful_addresses.csv` that consists of all exploitable offsets. 
+    - Basically, it flips each of the 8 bits one at a time for all the address locations. First, we check if the process continues till the end. If yes, we check if the generated signature is invalid or not. If the signature is invalid, which is what we want, we check if we can exploit the signature from that location. 
 
 6. **collect valid signatures**
     - In this step, we collect valid signatures for extraction purposes
@@ -99,8 +106,10 @@ Before proceeding further:
     ```bash
     python3 6_extract_min_sk.py
     ```
+    - This extracts the most secret values into the file `bash_script_results/extracted/minimum_wots_sign.txt`
 6. **forge**
-    -final steps, we forge the message. enter the message details in `message_to_forge.txt` and run 
+    - As a final step, we forge the message. enter the message details in `message_to_forge.txt` and run 
     ```bash
     python3 7_forge.py
     ```
+    - This generates a forged signature and stores it into `bash_script_results out/forged_signature.txt`

@@ -136,32 +136,11 @@ def extract_signature_fields(chunks):
     # print(f"Extracted signature fields from {len(extracted_data)} chunks")
     return extracted_data
 
-# def main():
-#     import argparse
-#     import json
-    
-#     parser = argparse.ArgumentParser(description="Process XMSS signature file")
-#     parser.add_argument("input_file", help="Path to the input file")
-#     parser.add_argument("--output-json", help="Optional path to save extracted data as JSON")
-    
-#     args = parser.parse_args()
-    
-#     # Get chunks based on address
 source_file_name = "bash_script_results/extracted/extracted_faulted_results.txt"
 chunks = chunk_file_by_address(source_file_name)
 
 # Extract specific fields
 extracted_data = extract_signature_fields(chunks)
-
-# Print summary of extracted data
-# for i, data in enumerate(extracted_data):
-#     print(f"\nChunk {i+1}:")
-#     print(f"  Address: {data['address']}")
-#     print(f"  Leaf: {data['leaf']}")
-#     print(f"  Lengths: {data['lengths'][:5]}... (total {len(data['lengths']) if isinstance(data['lengths'], list) else 'N/A'} values)")
-#     wots_sign = data['wots_sign']
-#     if wots_sign:
-#         print(f"  WOTS Sign: {wots_sign[:10]}... (length: {len(wots_sign)})")
 
 
 def organize_by_leaf(extracted_data):

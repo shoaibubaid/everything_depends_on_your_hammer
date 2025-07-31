@@ -161,45 +161,6 @@ os.makedirs(os.path.dirname(OUTPUT_FILE), exist_ok=True)
 # Clear output file
 open(OUTPUT_FILE, "w").close()
 
-# --- Read File and Process ---
-# lines = []
-
-# with open(INPUT_FILE, "r") as infile, open(OUTPUT_FILE, "a") as outfile:
-#     for line in infile:
-#         line = line.strip()
-
-#         if "crypto_sign_open returned <-1>" in line:
-#             if len(lines) >= 2:  # Ensure at least 2 lines exist
-#                 parts_line1 = lines[1].split()
-#                 parts_line0 = lines[0].split()
-
-#                 addr  = parts_line1[0]
-#                 byte1 = parts_line1[2] if len(parts_line1) > 2 else parts_line1[1]
-#                 byte2 = parts_line0[2] if len(parts_line0) > 2 else parts_line0[1]
-#             else:
-#                 print("Error: Not enough lines in the file.")
-#                 sys.exit(1)
-            
-#             # if len(lines) >= 3:
-#             #     # Extract values
-#             #     addr = lines[1].split()[0]
-#             #     byte1 = lines[1].split()[2]
-#             #     byte2 = lines[0].split()[2]
-
-#                 # Convert address to decimal and calculate offset
-#                 addr_dec = int(addr, 16)
-#                 offset = addr_dec - base_dec
-
-#                 # Write CSV line
-#                 outfile.write(f"{offset},{byte1},{byte2}\n")
-
-#             lines = []  # Reset buffer
-#         else:
-#             lines.append(line)
-#             if len(lines) > 3:
-#                 lines.pop(0)  # Keep last 3 lines only
-
-# print(f"Processing complete. Output saved to {OUTPUT_FILE}.")
 
 lines = []  # Buffer to store last 3 lines
 
@@ -249,17 +210,6 @@ with open(INPUT_FILE, "r") as infile, open(OUTPUT_FILE, "a") as outfile:
 print(f"Processing complete. Output saved to {OUTPUT_FILE}.")
 
 
-
-# # --- Argument Parsing ---
-# if len(sys.argv) != 2:
-#     print(f"Usage: python3 {sys.argv[0]} <base_address>")
-#     print(f"Example: python3 {sys.argv[0]} 0x0000555555557410")
-#     sys.exit(1)
-
-# input_addr = sys.argv[1]
-# if not input_addr.startswith("0x"):
-#     print("Error: Base address must start with 0x")
-#     sys.exit(1)
 
 # Convert base address to decimal
 BASE_ADDRESS = int(input_addr, 16)
@@ -380,28 +330,6 @@ else:
     print("No empty files found.")
 
 
-# # Hardcoded input and output paths
-# input_folder = "bash_script_results/results"
-# output_file = "bash_script_results/in/collected_faulty_sig.txt"
-
-# # Ensure output directory exists
-# os.makedirs(os.path.dirname(output_file), exist_ok=True)
-
-# # Clear the output file
-# with open(output_file, "w") as outfile:
-#     pass
-
-# # Loop through all files in the folder (non-recursive)
-# with open(output_file, "a") as outfile:
-#     for file_name in sorted(os.listdir(input_folder)):
-#         file_path = os.path.join(input_folder, file_name)
-#         if os.path.isfile(file_path):
-#             outfile.write(f"address = {file_name}\n")
-#             with open(file_path, "r") as infile:
-#                 outfile.write(infile.read())
-#             outfile.write("\n\n")  # Add two newlines after each file's content
-
-# print(f"All files combined into {output_file}.")
 
 
 input_folder = "bash_script_results/results"
